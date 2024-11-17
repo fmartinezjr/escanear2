@@ -1,118 +1,76 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useState } from 'react';
+import { SafeAreaView, Text, TextInput, Button, View, ActivityIndicator } from 'react-native';
+import { fetchBookDetails } from './src/services/api';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+export interface BookDetails {
+  items: Items[]
+}
+interface Items {
+  volumeInfo: {
+    title: string;
+    authors?: string[];
+    description?: string;
+  };
 }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+export default function App() {
+  const [isbn, setIsbn] = useState('');
+  const [bookDetails, setBookDetails] = useState<BookDetails | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFetchBookDetails = async () => {
+    setLoading(true);
+    setError(null);
+    setBookDetails(null);
+    
+    try {
+      const data = await fetchBookDetails(isbn);
+      setBookDetails(data);
+    } catch (err) {
+      setError(`Failed to fetch book details: ${err}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <SafeAreaView style={{ flex: 1, padding: 20 }}>
+      <Text style={{ fontSize: 24, textAlign: 'center', marginVertical: 20 }}>
+        Book Scanner
+      </Text>
+
+      <TextInput
+        style={{
+          height: 40,
+          borderColor: 'gray',
+          borderWidth: 1,
+          marginBottom: 10,
+          paddingHorizontal: 10,
+        }}
+        placeholder="Enter ISBN"
+        value={isbn}
+        onChangeText={setIsbn}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+
+      <Button title="Fetch Book Details" onPress={handleFetchBookDetails} />
+
+      {loading && <ActivityIndicator size="large" color="#0000ff" style={{ marginVertical: 20 }} />}
+      {error && <Text style={{ color: 'red', marginVertical: 20 }}>{error}</Text>}
+
+      {bookDetails && (
+        <View style={{ marginTop: 20 }}>
+          <Text style={{ fontWeight: 'bold' }}>Title:</Text>
+          <Text>{bookDetails.items[0]?.volumeInfo?.title || 'N/A'}</Text>
+
+          <Text style={{ fontWeight: 'bold', marginTop: 10 }}>Authors:</Text>
+          <Text>{bookDetails.items[0]?.volumeInfo?.authors?.join(', ') || 'N/A'}</Text>
+
+          <Text style={{ fontWeight: 'bold', marginTop: 10 }}>Description:</Text>
+          <Text>{bookDetails.items[0]?.volumeInfo?.description || 'N/A'}</Text>
         </View>
-      </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
-
-export default App;
