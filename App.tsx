@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { SafeAreaView, Text, TextInput, Button, View, ActivityIndicator } from 'react-native';
+import { SafeAreaView, Text, TextInput, Button, View,Alert,  ActivityIndicator } from 'react-native';
 import { fetchBookDetails } from './src/services/api';
+import { useCameraPermission, useCameraDevice } from 'react-native-vision-camera';
+
 
 export interface BookDetails {
   items: Items[]
@@ -20,6 +22,9 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { hasPermission } = useCameraPermission();
+
+
   const handleFetchBookDetails = async () => {
     setLoading(true);
     setError(null);
@@ -35,11 +40,22 @@ export default function App() {
     }
   };
 
+
   return (
     <SafeAreaView style={{ flex: 1, padding: 20 }}>
       <Text style={{ fontSize: 24, textAlign: 'center', marginVertical: 20 }}>
         Book Scanner
       </Text>
+      
+      {!hasPermission && (
+        <View style={{ marginBottom: 20 }}>
+          <Text style={{ color: 'red', textAlign: 'center', marginBottom: 10 }}>
+            Camera use is not currently enabled.
+          </Text>
+        </View>
+      )}
+
+
 
       <TextInput
         style={{
