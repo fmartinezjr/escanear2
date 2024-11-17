@@ -22,8 +22,15 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { hasPermission } = useCameraPermission();
+  const { hasPermission, requestPermission } = useCameraPermission();
 
+
+  const handleRequestPermission = async () => {
+    const granted = await requestPermission();
+    if (!granted) {
+      setError('Camera permissions are required to use this feature.');
+    }
+  };
 
   const handleFetchBookDetails = async () => {
     setLoading(true);
@@ -49,9 +56,7 @@ export default function App() {
       
       {!hasPermission && (
         <View style={{ marginBottom: 20 }}>
-          <Text style={{ color: 'red', textAlign: 'center', marginBottom: 10 }}>
-            Camera use is not currently enabled.
-          </Text>
+          <Button title="Grant Permission to use Camera" onPress={handleRequestPermission} />
         </View>
       )}
 
