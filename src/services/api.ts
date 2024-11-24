@@ -1,10 +1,11 @@
-
-import { API_KEY } from '@env';
-import { BookDetails } from '../../App';
+import { GOOGLE_API_KEY } from '@env';
+import { BookDetails } from '../App';
 
 export const fetchBookDetails = async (isbn: string): Promise<BookDetails> => {
   try {
-    const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${API_KEY}`);
+    const response = await fetch(
+      `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${GOOGLE_API_KEY}`,
+    );
 
     if (!response.ok) {
       const errorMessage = `Error: ${response.status} ${response.statusText}`;
@@ -26,6 +27,4 @@ export const fetchBookDetails = async (isbn: string): Promise<BookDetails> => {
     }
     throw error;
   }
-
-  };
-  
+};
